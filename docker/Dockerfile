@@ -33,7 +33,7 @@ RUN groupadd $APP_USER \
     && mkdir -p ${APP}
 
 COPY --from=builder /watcher/target/release/service ${APP}/service
-COPY --from=builder /watcher/config ${APP}/service/config
+COPY --from=builder /watcher/config ${APP}/config
 COPY --from=builder /watcher/docker/entrypoint.sh ${APP}/entrypoint.sh
 
 RUN chown -R $APP_USER:$APP_USER ${APP}
