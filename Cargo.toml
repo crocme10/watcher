@@ -19,7 +19,6 @@ slog = "2.5"
 slog-term = "2.5"
 slog-async = "2.5"
 snafu = { version = "0.6", features = [ "futures" ] }
-sqlx = { version = "0.3.5", default-features = false, features = [ "postgres", "runtime-tokio", "macros", "chrono", "uuid" ] }
 tokio = { version = "0.2.22", features = [ "sync", "rt-core", "macros", "stream", "process" ] }
 uuid = { version = "0.8", features = ["serde", "v4"] }
 url = "2.1"

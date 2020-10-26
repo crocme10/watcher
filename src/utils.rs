@@ -1,5 +1,4 @@
 use reqwest::header::{HeaderMap, HeaderValue, ACCEPT, CONTENT_TYPE};
-use std::env;
 
 pub fn construct_headers() -> HeaderMap {
     let mut headers = HeaderMap::new();

@@ -1,8 +1,6 @@
-use chrono::prelude::*;
 use futures::future;
 use futures::stream::{TryStream, TryStreamExt};
 use inotify::{Event, EventMask, Inotify, WatchMask};
-use slog::debug;
 use snafu::{futures::try_stream::TryStreamExt as SnafuTSE, Backtrace, ResultExt, Snafu};
 use std::io::{self, BufReader, Read};
 use std::path::PathBuf;

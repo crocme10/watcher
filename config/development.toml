@@ -2,11 +2,8 @@ debug = true
 mode = "development"
 
 [journal]
-host = "localhost"
-port = "7000"
-
-[database]
-url = "postgres://journaladmin:secret@localhost:5432/journal"
+host = "journal"
+port = "5000"
 
 [service]
 path = "assets"
