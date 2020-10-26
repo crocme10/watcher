@@ -22,14 +22,15 @@ pub async fn run_server(state: State) -> Result<(), error::Error> {
     // We keep a copy of the logger before the context takes ownership of it.
     info!(state.logger, "Serving watcher");
 
-    let mut watcher = Watcher::new(state.settings.service.path);
+    let mut watcher = Watcher::new(state.settings.service.path.clone());
 
     let journal_url = format!(
         "http://{}:{}/graphql",
         &state.settings.journal.host, &state.settings.journal.port
     );
 
-    if let Ok(mut stream) = watcher.doc_stream().context(error::IOError {
+    let s1 = state.clone();
+    if let Ok(mut stream) = watcher.doc_stream(s1).context(error::IOError {
         msg: String::from("Could not get doc stream"),
     }) {
         debug!(state.logger, "Document Stream available");

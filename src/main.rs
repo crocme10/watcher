@@ -7,27 +7,20 @@ use watcher::error;
 
 #[tokio::main]
 async fn main() -> Result<(), error::Error> {
-    let matches = App::new("Microservice for journal")
+    let matches = App::new("Microservice for watcher")
         .version("0.1")
         .author("Matthieu Paindavoine")
         .subcommand(
             SubCommand::with_name("run")
-                .about("Publish journal service")
+                .about("Publish watcher service")
                 .version("0.1")
                 .author("Matthieu Paindavoine <matt@area403.org>")
                 .arg(
-                    Arg::with_name("address")
-                        .value_name("HOST")
-                        .short("h")
-                        .long("host")
-                        .help("Address serving this server"),
-                )
-                .arg(
-                    Arg::with_name("port")
-                        .value_name("PORT")
-                        .short("p")
-                        .long("port")
-                        .help("Port"),
+                    Arg::with_name("config")
+                        .value_name("DIR")
+                        .short("c")
+                        .long("config")
+                        .help("config directory"),
                 ),
         )
         .get_matches();

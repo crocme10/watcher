@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use uuid::Uuid;
 
 use crate::api::model;
+use crate::state::State;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
@@ -53,6 +54,7 @@ impl Watcher {
 
     pub fn doc_stream(
         &mut self,
+        state: State,
     ) -> Result<impl TryStream<Ok = model::Doc, Error = Error> + '_, io::Error> {
         let mut inotify = Inotify::init()?;
 
@@ -63,17 +65,20 @@ impl Watcher {
 
         let event_stream = inotify.event_stream(&mut self.buffer[..])?;
 
+        let s1 = state.clone();
+        let s2 = state.clone();
         Ok(event_stream
             .context(INotifyError)
-            .and_then(event_to_path)
+            .and_then(move |event| event_to_path(event, s1.clone()))
             .try_filter_map(future::ok)
-            .and_then(path_to_doc)
+            .and_then(move |path| path_to_doc(path, s2.clone()))
             .try_filter_map(future::ok))
     }
 }
 
 fn event_to_path(
     event: Event<std::ffi::OsString>,
+    _state: State,
 ) -> impl future::TryFuture<Ok = Option<PathBuf>, Error = Error> {
     let opt_path = match event.name {
         Some(name) => {
@@ -116,9 +121,12 @@ fn event_to_path(
     future::ok(opt_path)
 }
 
-fn path_to_doc(path: PathBuf) -> impl future::TryFuture<Ok = Option<model::Doc>, Error = Error> {
+fn path_to_doc(
+    path: PathBuf,
+    state: State,
+) -> impl future::TryFuture<Ok = Option<model::Doc>, Error = Error> {
     // FIXME: Hardcoded base dir
-    let mut p = PathBuf::from("assets");
+    let mut p = state.settings.service.path;
     p.push(path.clone());
 
     let res = std::fs::File::open(p.clone())
