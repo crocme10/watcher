@@ -22,6 +22,29 @@ pub enum DocGenre {
     Reference,
 }
 
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
+pub struct Author {
+    pub name: String,
+    pub link: String,
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
+pub struct Resource {
+    pub link: String,
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
+pub struct Attribution {
+    pub author: Option<Author>,
+    pub resource: Option<Resource>,
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
+pub struct Image {
+    pub name: String,
+    pub attribution: Option<Attribution>,
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Doc {
     pub id: Uuid,
@@ -43,7 +66,7 @@ pub struct Front {
     pub outline: String,
     pub author: String,
     pub tags: Vec<String>,
-    pub image: String,
+    pub image: Image,
     #[serde(default = "default_kind")]
     pub kind: DocKind,
     #[serde(default = "default_genre")]

@@ -173,7 +173,7 @@ fn path_to_doc(
                 outline: front.outline,
                 author: front.author,
                 tags: front.tags,
-                image: front.image,
+                image: front.image.name,
                 kind: front.kind,
                 genre: front.genre,
                 content: String::from(v[2]),
