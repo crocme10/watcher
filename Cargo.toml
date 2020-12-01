@@ -3,6 +3,12 @@ name = "watcher"
 version = "0.3.0-rc0"
 authors = ["crocme10 <matt@area403.org>"]
 edition = "2018"
+description = "Monitors directory and updates documents database"
+license = "AGPLv3"
+readme = "README.md"
+repository = "https://github.com/crome10/watcher.git"
+keywords = [ "document" ]
+categories = [ "application" ]
 
 [dependencies]
 async-trait = "0.1.36"

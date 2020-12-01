@@ -66,7 +66,7 @@ impl Watcher {
         let event_stream = inotify.event_stream(&mut self.buffer[..])?;
 
         let s1 = state.clone();
-        let s2 = state.clone();
+        let s2 = state;
         Ok(event_stream
             .context(INotifyError)
             .and_then(move |event| event_to_path(event, s1.clone()))
@@ -93,12 +93,7 @@ fn event_to_path(
                             Some(path)
                         }
                     } else if event.mask.contains(EventMask::DELETE) {
-                        if event.mask.contains(EventMask::ISDIR) {
-                            // println!("Directory deleted: {:?}", path);
-                            None
-                        } else {
-                            None
-                        }
+                        None
                     } else if event.mask.contains(EventMask::MODIFY) {
                         if event.mask.contains(EventMask::ISDIR) {
                             // println!("Directory modified: {:?}", path);
