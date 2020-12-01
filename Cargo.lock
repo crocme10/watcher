@@ -1618,7 +1618,7 @@ checksum = "1d649a3145108d7d3fbcde896a468d1bd636791823c9921135218ad89be08307"
 
 [[package]]
 name = "watcher"
-version = "0.3.0-rc0"
+version = "0.3.0-rc1"
 dependencies = [
  "async-trait",
  "chrono",
