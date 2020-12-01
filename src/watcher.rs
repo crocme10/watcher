@@ -55,7 +55,7 @@ impl Watcher {
     pub fn doc_stream(
         &mut self,
         state: State,
-    ) -> Result<impl TryStream<Ok = model::Doc, Error = Error> + '_, io::Error> {
+    ) -> Result<impl TryStream<Ok = model::DocSpec, Error = Error> + '_, io::Error> {
         let mut inotify = Inotify::init()?;
 
         inotify.add_watch(
@@ -71,7 +71,7 @@ impl Watcher {
             .context(INotifyError)
             .and_then(move |event| event_to_path(event, s1.clone()))
             .try_filter_map(future::ok)
-            .and_then(move |path| path_to_doc(path, s2.clone()))
+            .and_then(move |path| path_to_doc_spec(path, s2.clone()))
             .try_filter_map(future::ok))
     }
 }
@@ -121,10 +121,10 @@ fn event_to_path(
     future::ok(opt_path)
 }
 
-fn path_to_doc(
+fn path_to_doc_spec(
     path: PathBuf,
     state: State,
-) -> impl future::TryFuture<Ok = Option<model::Doc>, Error = Error> {
+) -> impl future::TryFuture<Ok = Option<model::DocSpec>, Error = Error> {
     // FIXME: Hardcoded base dir
     let mut p = state.settings.service.path;
     p.push(path.clone());
@@ -167,13 +167,17 @@ fn path_to_doc(
 
             let front: model::Front = serde_yaml::from_str(v[1]).context(YamlError)?;
 
-            Ok(Some(model::Doc {
+            Ok(Some(model::DocSpec {
                 id,
                 title: front.title,
                 outline: front.outline,
-                author: front.author,
+                author_fullname: front.author.fullname,
+                author_resource: front.author.resource,
                 tags: front.tags,
-                image: front.image.name,
+                image_title: front.image.title,
+                image_resource: front.image.resource,
+                image_author_fullname: front.image.author.fullname,
+                image_author_resource: front.image.author.resource,
                 kind: front.kind,
                 genre: front.genre,
                 content: String::from(v[2]),

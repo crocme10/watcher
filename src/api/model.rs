@@ -2,19 +2,19 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-// enums need to be serialized in uppercase because the resulting string is
-// sent to a GraphQL interface, which expects all enums to be uppercase. On
-// the other hand, the deserialize is lowercase, because we expect the enum
-// to be written in lowercase in the front matter of the markdown.
+// Screaming Snake Case is GraphQL convention for enums.
+// But the document must be written in lowercase (feels more natural)
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all(serialize = "UPPERCASE", deserialize = "lowercase"))]
+#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "lowercase"))]
 pub enum DocKind {
     Doc,
     Post,
 }
 
+// Screaming Snake Case is GraphQL convention for enums.
+// But the document must be written in lowercase (feels more natural)
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all(serialize = "UPPERCASE", deserialize = "lowercase"))]
+#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "lowercase"))]
 pub enum DocGenre {
     Tutorial,
     Howto,
@@ -22,40 +22,19 @@ pub enum DocGenre {
     Reference,
 }
 
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Author {
-    pub name: String,
-    pub link: String,
+    pub fullname: String,
+    pub resource: String,
 }
 
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
-pub struct Resource {
-    pub link: String,
-}
-
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
-pub struct Attribution {
-    pub author: Option<Author>,
-    pub resource: Option<Resource>,
-}
-
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Image {
-    pub name: String,
-    pub attribution: Option<Attribution>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Doc {
-    pub id: Uuid,
     pub title: String,
-    pub outline: String,
-    pub author: String,
-    pub tags: Vec<String>,
-    pub image: String,
-    pub kind: DocKind,
-    pub genre: DocGenre,
-    pub content: String,
+    pub resource: String,
+    pub author: Author,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
@@ -64,13 +43,14 @@ pub struct Front {
     pub title: String,
     #[serde(rename = "abstract")]
     pub outline: String,
-    pub author: String,
+    pub author: Author,
     pub tags: Vec<String>,
     pub image: Image,
     #[serde(default = "default_kind")]
     pub kind: DocKind,
     #[serde(default = "default_genre")]
     pub genre: DocGenre,
+    pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 
@@ -80,4 +60,44 @@ pub fn default_kind() -> DocKind {
 
 pub fn default_genre() -> DocGenre {
     DocGenre::Tutorial
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Doc {
+    pub id: Uuid,
+    pub front: Front,
+    pub content: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SingleDocResponseBody {
+    pub doc: Option<Doc>,
+}
+
+// I haven't found a way to have struct that can be both GraphQLInputObject and GraphQLObject.
+// I would have like to use Doc to create a new document, but it doesn't work. So this is
+// the I don't want to think about it solution...
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DocSpec {
+    pub id: Uuid,
+    pub title: String,
+    pub outline: String,
+    pub author_fullname: String,
+    pub author_resource: String,
+    pub tags: Vec<String>,
+    pub image_title: String,
+    pub image_resource: String,
+    pub image_author_fullname: String,
+    pub image_author_resource: String,
+    pub kind: DocKind,
+    pub genre: DocGenre,
+    pub content: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct DocumentRequestBody {
+    pub doc: DocSpec,
 }

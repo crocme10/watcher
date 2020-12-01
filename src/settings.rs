@@ -2,6 +2,7 @@ use clap::ArgMatches;
 use config::{Config, Environment, File};
 use serde::Deserialize;
 use snafu::ResultExt;
+use std::convert::TryFrom;
 use std::env;
 use std::path::PathBuf;
 
@@ -73,6 +74,29 @@ impl Settings {
             .context(error::ConfigError {
                 msg: String::from("Could not merge configuration from environment variables"),
             })?;
+
+        // For the journal,s port, the value by default is the one in the configuration file.
+        // But it gets overwritten by the environment variable JOURNAL_GRAPHQL_PORT.
+        let default_port = s.get_int("journal.port").context(error::ConfigError {
+            msg: String::from("Could not get default journal port"),
+        })?;
+        // config crate support i64, not u16
+        let default_port = u16::try_from(default_port).map_err(|err| error::Error::MiscError {
+            msg: format!("Could not get u16 port ({})", err),
+        })?;
+        let port = env::var("JOURNAL_GRAPHQL_PORT").unwrap_or_else(|_| format!("{}", default_port));
+
+        let port = port.parse::<u16>().map_err(|err| error::Error::MiscError {
+            msg: format!("Could not parse into a valid port number ({})", err),
+        })?;
+
+        s.set(
+            "journal.port",
+            i64::try_from(port).expect("could not convert port to i64"),
+        )
+        .context(error::ConfigError {
+            msg: String::from("Could not set journal port"),
+        })?;
 
         // Now we take care of the database.url, which can be had from environment variables.
         let key = match mode.as_str() {

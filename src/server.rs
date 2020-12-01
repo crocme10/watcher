@@ -21,13 +21,14 @@ pub async fn run<'a>(matches: &ArgMatches<'a>, logger: Logger) -> Result<(), err
 pub async fn run_server(state: State) -> Result<(), error::Error> {
     // We keep a copy of the logger before the context takes ownership of it.
     info!(state.logger, "Serving watcher");
-
     let mut watcher = Watcher::new(state.settings.service.path.clone());
 
     let journal_url = format!(
         "http://{}:{}/graphql",
         &state.settings.journal.host, &state.settings.journal.port
     );
+
+    info!(state.logger, "GraphQL Target: {}", journal_url);
 
     let s1 = state.clone();
     if let Ok(mut stream) = watcher.doc_stream(s1).context(error::IOError {
@@ -41,7 +42,7 @@ pub async fn run_server(state: State) -> Result<(), error::Error> {
                     debug!(state.logger, "event: document");
                     let data = format!(
                         r#"{{ "query": "{query}", "variables": {{ "doc": {{ "doc": {doc} }} }} }}"#,
-                        query = "mutation CreateOrUpdateDocument($doc: DocumentRequestBody!) { createOrUpdateDocument(doc: $doc) { id, createdAt } }",
+                        query = "mutation CreateOrUpdateDocument($doc: DocumentRequestBody!) { createOrUpdateDocument(doc: $doc) { doc { id, front { title } } } }",
                         doc = serde_json::to_string(&opt_doc.unwrap()).unwrap() // FIXME
                     );
                     println!("request: {}", data);
